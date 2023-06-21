@@ -23,3 +23,43 @@ class User(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+    education_carts = db.relationship('UserEducationCart', backref='user', lazy=True)
+    skill_carts = db.relationship('UserSkillCart', backref='user', lazy=True)
+    educations = association_proxy('education_carts', 'education')
+    skills = association_proxy('skill_carts', 'skill')
+
+    serialize_rules = ('-education_carts.user', '-skill_carts.user', '-educations.user_education_carts', '-skills.user_skill_carts')
+    serialize_only = ('id','first_name','last_name', 'email', 'phone', 'address','gender', 'admin', 'job_title', 'status', 'DOB', 'created_at', 'updated_at', 'educations', 'skills')
+
+    
+
+class UserEducationCart(db.Model, SerializerMixin):
+    __tablename__ = 'user_education_carts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    education_id = db.Column(db.Integer, db.ForeignKey('educations.id'))
+    education = db.relationship('Education', backref='user_education_carts')
+
+class UserSkillCart(db.Model, SerializerMixin):
+    __tablename__ = 'user_skill_carts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    skill_id = db.Column(db.Integer, db.ForeignKey('skills.id'))
+    skill = db.relationship('Skill', backref='user_skill_carts')
+
+class Education(db.Model, SerializerMixin):
+    __tablename__ = 'educations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    degree = db.Column(db.String(50))
+    institution = db.Column(db.String(50))
+    year_completed = db.Column(db.Integer)
+
+class Skill(db.Model, SerializerMixin):
+    __tablename__ = 'skills'
+
+    id = db.Column(db.Integer, primary_key=True)
+    skill_name = db.Column(db.String(50))
+    proficiency = db.Column(db.String(50))
